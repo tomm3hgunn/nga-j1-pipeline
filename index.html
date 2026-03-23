@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Nga — J1 Outreach Pipeline</title>
+<style>
+:root{--bg:#0a0a0f;--surface:#111118;--border:#1e1e2e;--purple:#a855f7;--pink:#f472b6;--cyan:#00d4ff;--green:#00ff88;--yellow:#ffb800;--red:#ff4466;--text:#e2e8f0;--muted:#64748b;--card:#13131e;--mono:'JetBrains Mono','Fira Mono',monospace}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;font-size:13px;line-height:1.6;padding:24px 28px;max-width:1400px;margin:0 auto}
+
+/* HEADER */
+.hdr{border-bottom:1px solid var(--border);padding-bottom:14px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.hdr-left{}
+.hdr-title{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--purple)}
+.hdr-sub{font-size:10px;color:var(--muted);margin-top:3px;font-family:var(--mono)}
+.hdr-right{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.btn-sm{font-size:8px;font-family:var(--mono);padding:3px 10px;border-radius:3px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;text-decoration:none;letter-spacing:1px;text-transform:uppercase;transition:all .15s;display:inline-flex;align-items:center;gap:4px}
+.btn-sm:hover{border-color:var(--purple);color:var(--purple)}
+.btn-sm.purple{border-color:var(--purple);color:var(--purple)}
+.lang-toggle{font-size:9px;font-family:var(--mono);padding:3px 10px;border-radius:3px;border:1px solid var(--cyan);background:rgba(0,212,255,.08);color:var(--cyan);cursor:pointer;letter-spacing:1px;text-transform:uppercase;transition:all .15s}
+.lang-toggle:hover{background:rgba(0,212,255,.18)}
+
+/* BIG STATS */
+.big4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:20px}
+.b4{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 12px;text-align:center}
+.b4.p{border-color:rgba(168,85,247,.3)}
+.b4.g{border-color:rgba(0,255,136,.3)}
+.b4.y{border-color:rgba(255,184,0,.3)}
+.b4.r{border-color:rgba(255,68,102,.3)}
+.b4-n{font-family:var(--mono);font-size:28px;font-weight:800;line-height:1}
+.b4.p .b4-n{color:var(--purple)}
+.b4.g .b4-n{color:var(--green)}
+.b4.y .b4-n{color:var(--yellow)}
+.b4.r .b4-n{color:var(--red)}
+.b4-l{font-size:9px;font-family:var(--mono);text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-top:4px}
+.b4-s{font-size:8px;font-family:var(--mono);color:var(--muted);margin-top:2px}
+
+/* TIMELINE BANNER */
+.timeline{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:20px}
+.tl-title{font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.tl-row{display:flex;gap:0;overflow:hidden;border-radius:6px;height:28px;position:relative}
+.tl-seg{display:flex;align-items:center;justify-content:center;font-size:7.5px;font-family:var(--mono);font-weight:700;letter-spacing:.5px;text-transform:uppercase;transition:flex .3s}
+.tl-seg.done{background:rgba(0,255,136,.15);color:var(--green);border-right:1px solid rgba(0,255,136,.2)}
+.tl-seg.now{background:rgba(168,85,247,.25);color:var(--purple);border-right:1px solid rgba(168,85,247,.3);animation:pulse-bg 2s infinite}
+.tl-seg.future{background:rgba(255,255,255,.04);color:var(--muted);border-right:1px solid var(--border)}
+@keyframes pulse-bg{0%,100%{background:rgba(168,85,247,.2)}50%{background:rgba(168,85,247,.35)}}
+.tl-labels{display:flex;justify-content:space-between;margin-top:5px}
+.tl-lbl{font-size:7px;font-family:var(--mono);color:var(--muted)}
+.tl-lbl.now{color:var(--purple)}
+
+/* LAYOUT */
+.layout{display:grid;grid-template-columns:340px 1fr;gap:16px;align-items:start}
+.left{position:sticky;top:20px;display:flex;flex-direction:column;gap:12px;max-height:calc(100vh - 40px);overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border) transparent;padding-right:4px}
+.right{display:flex;flex-direction:column;gap:12px}
+
+/* CARD */
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 16px}
+.sec{font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+
+/* SPONSOR LIST */
+.stbl-list{display:flex;flex-direction:column}
+.stbl-row{padding:7px 0;border-bottom:1px solid var(--border)}
+.stbl-row:last-child{border-bottom:none}
+.stbl-main{display:flex;align-items:baseline;gap:8px;margin-bottom:3px;flex-wrap:wrap}
+.stbl-name{font-family:var(--mono);font-weight:700;color:var(--text);font-size:12px;flex:1;min-width:0}
+.stbl-fee{font-family:var(--mono);color:var(--yellow);font-size:11px;white-space:nowrap}
+.stbl-speed{color:var(--green);font-size:11px;white-space:nowrap}
+.stbl-note{font-size:11px;color:var(--muted);line-height:1.4}
+.star{color:var(--yellow);font-size:11px}
+
+/* ACTION LIST */
+.action-row{display:flex;align-items:flex-start;gap:8px;padding:7px 0;border-bottom:1px solid var(--border)}
+.action-row:last-child{border-bottom:none}
+.a-urgency{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.a-urgency.red{background:var(--red)}
+.a-urgency.yellow{background:var(--yellow)}
+.a-urgency.green{background:var(--green)}
+.a-text{font-size:9.5px;line-height:1.5}
+.a-deadline{font-size:8px;font-family:var(--mono);color:var(--muted);margin-top:2px}
+.a-done{text-decoration:line-through;color:var(--muted)}
+
+/* EVIDENCE SOURCES */
+.evidence-item{padding:8px 0;border-bottom:1px solid var(--border)}
+.evidence-item:last-child{border-bottom:none}
+.ev-claim{font-size:9.5px;color:var(--text);line-height:1.5;margin-bottom:4px}
+.ev-claim strong{color:var(--green)}
+.ev-quote{font-size:8.5px;font-style:italic;color:var(--muted);line-height:1.5;padding:4px 8px;border-left:2px solid var(--purple);margin-bottom:4px}
+.ev-source{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.ev-src-tag{font-size:7.5px;font-family:var(--mono);padding:1px 7px;border-radius:3px;background:rgba(168,85,247,.08);color:var(--purple);border:1px solid rgba(168,85,247,.2)}
+.ev-src-tag.official{background:rgba(0,255,136,.07);color:var(--green);border-color:rgba(0,255,136,.2)}
+.ev-src-tag.sponsor{background:rgba(0,212,255,.07);color:var(--cyan);border-color:rgba(0,212,255,.2)}
+.ev-src-link{font-size:7.5px;font-family:var(--mono);color:var(--cyan);text-decoration:none}
+.ev-src-link:hover{text-decoration:underline}
+.ev-date{font-size:7px;font-family:var(--mono);color:var(--muted)}
+
+/* FILTERS */
+.filter-row{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px}
+.fbtn{font-size:8.5px;font-family:var(--mono);padding:3px 10px;border-radius:3px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;letter-spacing:.5px;transition:all .15s}
+.fbtn:hover{border-color:var(--purple);color:var(--purple)}
+.fbtn.active{background:rgba(168,85,247,.15);border-color:var(--purple);color:var(--purple)}
+
+/* COMPANY GRID */
+.cg{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:8px}
+.cc{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 14px;cursor:pointer;transition:all .2s;position:relative}
+.cc:hover{border-color:var(--purple);transform:translateY(-1px);box-shadow:0 4px 16px rgba(168,85,247,.1)}
+.cc-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:6px}
+.cc-name{font-size:13px;font-weight:700;color:var(--text)}
+.cc-badge{font-size:7px;font-family:var(--mono);font-weight:700;letter-spacing:.8px;text-transform:uppercase;padding:2px 7px;border-radius:3px;white-space:nowrap}
+.cc-badge.not-contacted{background:rgba(100,116,139,.1);color:var(--muted);border:1px solid var(--border)}
+.cc-badge.emailed{background:rgba(0,212,255,.1);color:var(--cyan);border:1px solid rgba(0,212,255,.25)}
+.cc-badge.responded{background:rgba(255,184,0,.1);color:var(--yellow);border:1px solid rgba(255,184,0,.25)}
+.cc-badge.interested{background:rgba(0,255,136,.1);color:var(--green);border:1px solid rgba(0,255,136,.25)}
+.cc-badge.passed{background:rgba(255,68,102,.1);color:var(--red);border:1px solid rgba(255,68,102,.2)}
+.cc-type{font-size:8px;color:var(--muted);margin-bottom:4px}
+.cc-contact{font-size:8.5px;font-family:var(--mono);color:var(--cyan);margin-bottom:3px;word-break:break-all}
+.cc-note{font-size:8px;color:var(--muted);line-height:1.5}
+.cc-pills{display:flex;flex-wrap:wrap;gap:4px;margin-top:7px}
+.cc-pill{font-size:7px;font-family:var(--mono);padding:1px 6px;border-radius:3px;background:rgba(168,85,247,.08);color:var(--purple);border:1px solid rgba(168,85,247,.15)}
+.cc-pill.high{background:rgba(0,255,136,.07);color:var(--green);border-color:rgba(0,255,136,.2)}
+.cc-pill.med{background:rgba(255,184,0,.07);color:var(--yellow);border-color:rgba(255,184,0,.2)}
+
+/* SECTION GROUP HDR */
+.grp-hdr{font-family:var(--mono);font-size:8px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);padding:12px 0 6px;border-bottom:1px solid var(--border);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between}
+.grp-cnt{background:var(--border);color:var(--text);font-size:7px;padding:1px 7px;border-radius:3px;font-family:var(--mono)}
+
+/* MODAL */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:1000;align-items:center;justify-content:center;backdrop-filter:blur(8px)}
+.modal-bg.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px 22px;max-width:520px;width:90vw;position:relative;max-height:85vh;overflow-y:auto}
+.modal-close{position:absolute;top:10px;right:12px;background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;line-height:1}
+.modal-close:hover{color:var(--text)}
+.modal-co{font-size:18px;font-weight:800;margin-bottom:4px}
+.modal-type{font-size:10px;color:var(--muted);margin-bottom:14px}
+.mrow{display:flex;gap:8px;margin-bottom:8px;align-items:flex-start}
+.mrow-l{font-size:8px;font-family:var(--mono);font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);width:80px;flex-shrink:0;padding-top:2px}
+.mrow-v{font-size:10px;color:var(--text);line-height:1.5;word-break:break-all}
+.mrow-v a{color:var(--cyan);text-decoration:none}
+.mrow-v a:hover{text-decoration:underline}
+.status-select{background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:9px;padding:3px 6px;border-radius:3px;cursor:pointer}
+.note-input{background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:9px;padding:6px 8px;border-radius:3px;width:100%;resize:vertical;min-height:60px}
+.save-btn{font-family:var(--mono);font-size:8px;padding:4px 14px;border-radius:3px;border:1px solid var(--purple);background:rgba(168,85,247,.12);color:var(--purple);cursor:pointer;letter-spacing:1px;text-transform:uppercase;margin-top:8px;transition:all .15s}
+.save-btn:hover{background:rgba(168,85,247,.25)}
+
+/* RESUME THUMBNAIL IN MODAL */
+.resume-thumb-wrap{margin-bottom:8px}
+.resume-thumb-img{width:100%;max-width:260px;border-radius:6px;border:1px solid var(--border);cursor:zoom-in;transition:border-color .15s;display:block}
+.resume-thumb-img:hover{border-color:var(--purple)}
+.resume-thumb-caption{font-size:7.5px;font-family:var(--mono);color:var(--muted);margin-top:4px}
+
+/* LIGHTBOX */
+.lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:2000;align-items:center;justify-content:center;cursor:zoom-out}
+.lightbox.open{display:flex}
+.lightbox img{max-width:90vw;max-height:90vh;border-radius:8px;border:1px solid var(--border);object-fit:contain}
+
+/* EVIDENCE BADGE ON CARD */
+.ev-badge{font-size:6.5px;font-family:var(--mono);font-weight:700;letter-spacing:.5px;text-transform:uppercase;padding:1px 6px;border-radius:3px;display:inline-block}
+.ev-badge.confirmed{background:rgba(0,255,136,.1);color:var(--green);border:1px solid rgba(0,255,136,.25)}
+.ev-badge.contact{background:rgba(255,184,0,.1);color:var(--yellow);border:1px solid rgba(255,184,0,.2)}
+.ev-badge.no{background:rgba(255,68,102,.1);color:var(--red);border:1px solid rgba(255,68,102,.25)}
+
+/* EVIDENCE BLOCK IN MODAL */
+.ev-modal{margin-bottom:8px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:6px;padding:8px 10px}
+.ev-modal-level{font-size:8px;font-family:var(--mono);font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:5px}
+.ev-modal-level.confirmed{color:var(--green)}
+.ev-modal-level.contact{color:var(--yellow)}
+.ev-modal-level.no{color:var(--red)}
+.ev-modal-quote{font-size:8.5px;font-style:italic;color:var(--muted);border-left:2px solid var(--purple);padding-left:7px;line-height:1.5;margin-bottom:5px}
+.ev-modal-src{font-size:7.5px;font-family:var(--mono);display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.ev-modal-src a{color:var(--cyan);text-decoration:none}
+.ev-modal-src a:hover{text-decoration:underline}
+.ev-modal-date{color:var(--muted)}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="hdr-left">
+    <div class="hdr-title" data-i18n="header.title">◈ Nga J1 Pipeline</div>
+    <div class="hdr-sub" id="hdr-sub">Loading...</div>
+  </div>
+  <div class="hdr-right">
+    <button class="lang-toggle" id="lang-btn" onclick="toggleLang()">VI</button>
+    <a href="/phantom-resume/nga-portfolio/" class="btn-sm" data-i18n="btn.portfolio">Portfolio ↗</a>
+    <a href="/phantom-resume/" class="btn-sm">Thomas ↗</a>
+    <span class="btn-sm purple" id="ts-badge">Mar 2026</span>
+  </div>
+</div>
+
+<!-- BIG 4 -->
+<div class="big4">
+  <div class="b4 p"><div class="b4-n" id="cnt-total">—</div><div class="b4-l" data-i18n="stat.targets">Targets</div><div class="b4-s" data-i18n="stat.targets.sub">companies identified</div></div>
+  <div class="b4 g"><div class="b4-n" id="cnt-interested">—</div><div class="b4-l" data-i18n="stat.interested">Interested</div><div class="b4-s" data-i18n="stat.interested.sub">responded positively</div></div>
+  <div class="b4 y"><div class="b4-n" id="cnt-emailed">—</div><div class="b4-l" data-i18n="stat.contacted">Contacted</div><div class="b4-s" data-i18n="stat.contacted.sub">emails sent</div></div>
+  <div class="b4 r"><div class="b4-n" id="cnt-passed">—</div><div class="b4-l" data-i18n="stat.passed">Passed</div><div class="b4-s" data-i18n="stat.passed.sub">no response / declined</div></div>
+</div>
+
+<!-- TIMELINE -->
+<div class="timeline">
+  <div class="tl-title" data-i18n="tl.title">J1 Timeline — July 2026 Start</div>
+  <div class="tl-row">
+    <div class="tl-seg done" style="flex:1.5" data-i18n="tl.s1">Sponsor Applied</div>
+    <div class="tl-seg now" style="flex:2" data-i18n="tl.s2">▸ Outreach Wave 1</div>
+    <div class="tl-seg future" style="flex:1.5" data-i18n="tl.s3">DS-2019 Issued</div>
+    <div class="tl-seg future" style="flex:1.5" data-i18n="tl.s4">Embassy Interview</div>
+    <div class="tl-seg future" style="flex:1" data-i18n="tl.s5">Visa Stamp</div>
+    <div class="tl-seg future" style="flex:1" data-i18n="tl.s6">Grad Jun 16</div>
+    <div class="tl-seg future" style="flex:1" data-i18n="tl.s7">Jul 1 Start</div>
+  </div>
+  <div class="tl-labels">
+    <span class="tl-lbl">Mar 15</span>
+    <span class="tl-lbl now" data-i18n="tl.today">Mar 22 ← TODAY</span>
+    <span class="tl-lbl">Apr 12</span>
+    <span class="tl-lbl">May 1–15</span>
+    <span class="tl-lbl">May 25</span>
+    <span class="tl-lbl">Jun 16</span>
+    <span class="tl-lbl">Jul 1</span>
+  </div>
+</div>
+
+<!-- TWO COLUMN LAYOUT -->
+<div class="layout">
+
+  <!-- LEFT -->
+  <div class="left">
+
+    <!-- ACTION ITEMS -->
+    <div class="card">
+      <div class="sec" data-i18n="sec.actions">Action Items</div>
+      <div class="action-row"><div class="a-urgency red"></div><div><div class="a-text" data-i18n="act.1">Pick sponsor org — contact Cultural Vistas + InterExchange for quotes</div><div class="a-deadline" data-i18n="act.1.dl">Due Mar 22 (TODAY)</div></div></div>
+      <div class="action-row"><div class="a-urgency red"></div><div><div class="a-text" data-i18n="act.2">Decide: find host company via outreach OR create LLC</div><div class="a-deadline" data-i18n="act.2.dl">Due Mar 22 (TODAY)</div></div></div>
+      <div class="action-row"><div class="a-urgency yellow"></div><div><div class="a-text" data-i18n="act.3">Send wave 1 outreach — 30 target companies</div><div class="a-deadline" data-i18n="act.3.dl">Due Mar 22 → Mar 29</div></div></div>
+      <div class="action-row"><div class="a-urgency yellow"></div><div><div class="a-text" data-i18n="act.4">Submit sponsor application + DS-7002 training plan</div><div class="a-deadline" data-i18n="act.4.dl">Due Mar 29</div></div></div>
+      <div class="action-row"><div class="a-urgency yellow"></div><div><div class="a-text" data-i18n="act.5">Nga: get English proficiency proof (IELTS 5.5+ / TOEIC 550+ or Duy Tan letter)</div><div class="a-deadline" data-i18n="act.5.dl">Due Mar 29</div></div></div>
+      <div class="action-row"><div class="a-urgency green"></div><div><div class="a-text" data-i18n="act.6">Nga: get enrollment certificate + transcript from Duy Tan</div><div class="a-deadline" data-i18n="act.6.dl">Due Apr 1</div></div></div>
+      <div class="action-row"><div class="a-urgency green"></div><div><div class="a-text" data-i18n="act.7">Pay SEVIS I-901 fee ($220)</div><div class="a-deadline" data-i18n="act.7.dl">After DS-2019 issued (~Apr 14)</div></div></div>
+      <div class="action-row"><div class="a-urgency green"></div><div><div class="a-text" data-i18n="act.8">Schedule US Embassy interview HCMC or Hanoi — do immediately after DS-2019</div><div class="a-deadline" data-i18n="act.8.dl">Apr 15 target</div></div></div>
+    </div>
+
+    <!-- SPONSORS -->
+    <div class="card">
+      <div class="sec" data-i18n="sec.sponsors">J1 Sponsor Options</div>
+      <div class="stbl-list">
+        <div class="stbl-row"><div class="stbl-main"><span class="stbl-name"><span class="star">★</span> J1X</span><span class="stbl-fee">$1,495</span><span class="stbl-speed">48 hrs</span></div><div class="stbl-note">Fastest. +1 404-328-4988. j1visaexchanges.com</div></div>
+        <div class="stbl-row"><div class="stbl-main"><span class="stbl-name"><span class="star">★</span> Odyssey</span><span class="stbl-fee">contact</span><span class="stbl-speed">~7 days</span></div><div class="stbl-note">Vietnam office Da Nang. odc-exchange.com</div></div>
+        <div class="stbl-row"><div class="stbl-main"><span class="stbl-name">InterExchange</span><span class="stbl-fee">$800–1,200</span><span class="stbl-speed">~10 days</span></div><div class="stbl-note">Insurance included. interexchange.org</div></div>
+        <div class="stbl-row"><div class="stbl-main"><span class="stbl-name">Cultural Vistas</span><span class="stbl-fee">$900–1,375</span><span class="stbl-speed">~10 days</span></div><div class="stbl-note">Recommended in plan. culturalvistas.org</div></div>
+        <div class="stbl-row"><div class="stbl-main"><span class="stbl-name">Stage-USA</span><span class="stbl-fee">$1,495–2,350</span><span class="stbl-speed">1 wk rush</span></div><div class="stbl-note">Published pricing. info@stage-usa.com</div></div>
+        <div class="stbl-row"><div class="stbl-main"><span class="stbl-name">CIEE</span><span class="stbl-fee">varies</span><span class="stbl-speed">7–10 days</span></div><div class="stbl-note">Largest DOS sponsor. professionalexchanges@ciee.org</div></div>
+        <div class="stbl-row"><div class="stbl-main"><span class="stbl-name">CETUSA</span><span class="stbl-fee">contact</span><span class="stbl-speed">3–10 days</span></div><div class="stbl-note">Rush available. 888-238-8721. cetusa.org</div></div>
+        <div class="stbl-row"><div class="stbl-main"><span class="stbl-name">Alliance Abroad</span><span class="stbl-fee">~$2,800</span><span class="stbl-speed">7 days</span></div><div class="stbl-note">Deferred payment. allianceabroad.com</div></div>
+        <div class="stbl-row"><div class="stbl-main"><span class="stbl-name">Intrax/CICD</span><span class="stbl-fee">contact</span><span class="stbl-speed">—</span></div><div class="stbl-note">Seattle local office. globalinternships.com</div></div>
+      </div>
+    </div>
+
+    <!-- VISA EVIDENCE CARD -->
+    <div class="card">
+      <div class="sec" data-i18n="sec.visa">Visa Category: J1 Intern ✓</div>
+      <div style="font-size:9px;color:var(--green);font-weight:700;font-family:var(--mono);margin-bottom:10px" data-i18n="visa.eligible">CONFIRMED ELIGIBLE — 3 INDEPENDENT SOURCES</div>
+
+      <!-- Evidence 1: Federal Regulation -->
+      <div class="evidence-item">
+        <div class="ev-claim" data-i18n="ev1.claim"><strong>12-month post-grad window</strong> — official federal regulation</div>
+        <div class="ev-quote" data-i18n="ev1.quote">"Interns must be currently enrolled full-time…or graduated from such an institution <strong>no more than 12 months prior to their exchange visitor program begin date.</strong>"</div>
+        <div class="ev-source">
+          <span class="ev-src-tag official" data-i18n="ev1.tag">US Federal Law</span>
+          <a class="ev-src-link" href="https://www.law.cornell.edu/cfr/text/22/62.22" target="_blank">22 CFR §62.22(d)(3) — law.cornell.edu</a>
+          <span class="ev-date">verified Mar 23 2026</span>
+        </div>
+      </div>
+
+      <!-- Evidence 2: Official DOS BridgeUSA -->
+      <div class="evidence-item">
+        <div class="ev-claim" data-i18n="ev2.claim"><strong>DOS BridgeUSA official program page</strong> — direct US State Dept confirmation</div>
+        <div class="ev-quote" data-i18n="ev2.quote">"Who have graduated from such an institution <strong>no more than 12 months prior</strong> to their exchange visitor program start date."</div>
+        <div class="ev-source">
+          <span class="ev-src-tag official" data-i18n="ev2.tag">Official DOS Site</span>
+          <a class="ev-src-link" href="https://j1visa.state.gov/programs/intern/" target="_blank">j1visa.state.gov/programs/intern/</a>
+          <span class="ev-date">verified Mar 23 2026</span>
+        </div>
+      </div>
+
+      <!-- Evidence 3: DOS-designated sponsor -->
+      <div class="evidence-item">
+        <div class="ev-claim" data-i18n="ev3.claim"><strong>IST Plus</strong> — DOS-designated J1 sponsor, identical language</div>
+        <div class="ev-quote" data-i18n="ev3.quote">"Applicants may be <strong>within 12 months of completing their studies</strong> at the time they plan to start the internship."</div>
+        <div class="ev-source">
+          <span class="ev-src-tag sponsor" data-i18n="ev3.tag">DOS Sponsor</span>
+          <a class="ev-src-link" href="https://istplus.com/j1-intern-usa" target="_blank">istplus.com/j1-intern-usa</a>
+          <span class="ev-date">verified Mar 23 2026</span>
+        </div>
+      </div>
+
+      <div style="margin-top:10px;font-size:8.5px;color:var(--muted);line-height:1.7" data-i18n="visa.analysis">
+        Nga graduates <strong style="color:var(--text)">Jun 16, 2026</strong>. Program begins <strong style="color:var(--text)">Jul 1, 2026</strong> = 15 days post-grad. Well inside the 12-month window.<br><br>
+        <strong style="color:var(--red)">J-1 Trainee: NOT eligible</strong> — requires 1yr paid field experience post-degree. Earliest: mid-2027.<br><br>
+        <strong style="color:var(--yellow)">Pitch to employers:</strong> Self-arranged J-1 — student brings own sponsor. <em>Zero paperwork, zero fees</em> for host company. One DS-7002 form only.
+      </div>
+    </div>
+
+  </div><!-- /left -->
+
+  <!-- RIGHT -->
+  <div class="right">
+
+    <!-- FILTERS -->
+    <div class="filter-row" id="filters">
+      <button class="fbtn active" data-f="all" onclick="setFilter('all')" data-i18n="filter.all">All</button>
+      <button class="fbtn" data-f="not-contacted" onclick="setFilter('not-contacted')" data-i18n="filter.notcontacted">Not Contacted</button>
+      <button class="fbtn" data-f="emailed" onclick="setFilter('emailed')" data-i18n="filter.emailed">Emailed</button>
+      <button class="fbtn" data-f="responded" onclick="setFilter('responded')" data-i18n="filter.responded">Responded</button>
+      <button class="fbtn" data-f="interested" onclick="setFilter('interested')" data-i18n="filter.interested">Interested</button>
+      <button class="fbtn" data-f="passed" onclick="setFilter('passed')" data-i18n="filter.passed">Passed</button>
+      <button class="fbtn" id="ineligible-toggle" onclick="toggleIneligible()" style="margin-left:auto;border-color:rgba(255,68,102,.3);color:var(--red)" id="ineligible-btn">Show Ineligible (2)</button>
+    </div>
+
+    <div id="company-list"></div>
+
+  </div><!-- /right -->
+
+</div><!-- /layout -->
+
+<!-- MODAL -->
+<div class="modal-bg" id="modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal" id="modal-inner">
+    <button class="modal-close" onclick="closeModal()">×</button>
+    <div class="modal-co" id="m-name">—</div>
+    <div class="modal-type" id="m-type">—</div>
+    <div class="mrow">
+      <div class="mrow-l" data-i18n="modal.status">Status</div>
+      <div class="mrow-v">
+        <select class="status-select" id="m-status" onchange="saveStatus()">
+          <option value="not-contacted" data-i18n="filter.notcontacted">Not Contacted</option>
+          <option value="emailed" data-i18n="filter.emailed">Emailed</option>
+          <option value="responded" data-i18n="filter.responded">Responded</option>
+          <option value="interested" data-i18n="filter.interested">Interested</option>
+          <option value="passed" data-i18n="filter.passed">Passed</option>
+        </select>
+      </div>
+    </div>
+    <div class="mrow"><div class="mrow-l" data-i18n="modal.contact">Contact</div><div class="mrow-v" id="m-contact">—</div></div>
+    <div class="mrow" id="m-ev-row">
+      <div class="mrow-l" data-i18n="modal.evidence">Evidence</div>
+      <div class="mrow-v">
+        <div class="ev-modal" id="m-ev-block"></div>
+      </div>
+    </div>
+    <div class="mrow"><div class="mrow-l" data-i18n="modal.why">Why</div><div class="mrow-v" id="m-why">—</div></div>
+    <div class="mrow"><div class="mrow-l" data-i18n="modal.pitch">Pitch angle</div><div class="mrow-v" id="m-pitch">—</div></div>
+    <div class="mrow"><div class="mrow-l" data-i18n="modal.link">Link</div><div class="mrow-v" id="m-link">—</div></div>
+    <!-- RESUME PREVIEW -->
+    <div class="mrow" id="m-resume-row">
+      <div class="mrow-l" data-i18n="modal.resume">Resume</div>
+      <div class="mrow-v">
+        <div class="resume-thumb-wrap">
+          <img id="m-resume-thumb" class="resume-thumb-img" src="" alt="Resume preview" onclick="openLightbox(this.src)"/>
+          <div class="resume-thumb-caption" id="m-resume-caption">Click to enlarge</div>
+        </div>
+      </div>
+    </div>
+    <div class="mrow"><div class="mrow-l" data-i18n="modal.notes">Notes</div><div class="mrow-v"><textarea class="note-input" id="m-notes" placeholder="Email sent? Response? Next step?"></textarea></div></div>
+    <button class="save-btn" onclick="saveNotes()" data-i18n="modal.save">Save Notes</button>
+  </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <img id="lightbox-img" src="" alt="Resume preview full size"/>
+</div>
+
+<script>
+// ── I18N ──────────────────────────────────────────────────────────────────────
+let LANG = 'en';
+
+const I18N = {
+  en: {
+    'header.title': '◈ Nga J1 Pipeline',
+    'btn.portfolio': 'Portfolio ↗',
+    'stat.targets': 'Targets',
+    'stat.targets.sub': 'companies identified',
+    'stat.interested': 'Interested',
+    'stat.interested.sub': 'responded positively',
+    'stat.contacted': 'Contacted',
+    'stat.contacted.sub': 'emails sent',
+    'stat.passed': 'Passed',
+    'stat.passed.sub': 'no response / declined',
+    'tl.title': 'J1 Timeline — July 2026 Start',
+    'tl.s1': 'Sponsor Applied', 'tl.s2': '▸ Outreach Wave 1', 'tl.s3': 'DS-2019 Issued',
+    'tl.s4': 'Embassy Interview', 'tl.s5': 'Visa Stamp', 'tl.s6': 'Grad Jun 16', 'tl.s7': 'Jul 1 Start',
+    'tl.today': 'Mar 22 ← TODAY',
+    'sec.actions': 'Action Items',
+    'act.1': 'Pick sponsor org — contact Cultural Vistas + InterExchange for quotes',
+    'act.1.dl': 'Due Mar 22 (TODAY)',
+    'act.2': 'Decide: find host company via outreach OR create LLC',
+    'act.2.dl': 'Due Mar 22 (TODAY)',
+    'act.3': 'Send wave 1 outreach — 30 target companies',
+    'act.3.dl': 'Due Mar 22 → Mar 29',
+    'act.4': 'Submit sponsor application + DS-7002 training plan',
+    'act.4.dl': 'Due Mar 29',
+    'act.5': 'Nga: get English proficiency proof (IELTS 5.5+ / TOEIC 550+ or Duy Tan letter)',
+    'act.5.dl': 'Due Mar 29',
+    'act.6': 'Nga: get enrollment certificate + transcript from Duy Tan',
+    'act.6.dl': 'Due Apr 1',
+    'act.7': 'Pay SEVIS I-901 fee ($220)',
+    'act.7.dl': 'After DS-2019 issued (~Apr 14)',
+    'act.8': 'Schedule US Embassy interview HCMC or Hanoi — immediately after DS-2019',
+    'act.8.dl': 'Apr 15 target',
+    'sec.sponsors': 'J1 Sponsor Options',
+    'sec.visa': 'Visa Category: J1 Intern ✓',
+    'visa.eligible': 'CONFIRMED ELIGIBLE — 3 INDEPENDENT SOURCES',
+    'ev1.claim': '<strong>12-month post-grad window</strong> — official federal regulation',
+    'ev1.quote': '"Interns must be currently enrolled full-time…or graduated from such an institution <strong>no more than 12 months prior to their exchange visitor program begin date.</strong>"',
+    'ev1.tag': 'US Federal Law',
+    'ev2.claim': '<strong>DOS BridgeUSA official program page</strong> — direct US State Dept confirmation',
+    'ev2.quote': '"Who have graduated from such an institution <strong>no more than 12 months prior</strong> to their exchange visitor program start date."',
+    'ev2.tag': 'Official DOS Site',
+    'ev3.claim': '<strong>IST Plus</strong> — DOS-designated J1 sponsor, identical language',
+    'ev3.quote': '"Applicants may be <strong>within 12 months of completing their studies</strong> at the time they plan to start the internship."',
+    'ev3.tag': 'DOS Sponsor',
+    'visa.analysis': 'Nga graduates <strong style="color:var(--text)">Jun 16, 2026</strong>. Program begins <strong style="color:var(--text)">Jul 1, 2026</strong> = 15 days post-grad. Well inside the 12-month window.<br><br><strong style="color:var(--red)">J-1 Trainee: NOT eligible</strong> — requires 1yr paid field experience post-degree. Earliest: mid-2027.<br><br><strong style="color:var(--yellow)">Pitch to employers:</strong> Self-arranged J-1 — student brings own sponsor. <em>Zero paperwork, zero fees</em> for host company. One DS-7002 form only.',
+    'filter.all': 'All', 'filter.notcontacted': 'Not Contacted', 'filter.emailed': 'Emailed',
+    'filter.responded': 'Responded', 'filter.interested': 'Interested', 'filter.passed': 'Passed',
+    'modal.status': 'Status', 'modal.contact': 'Contact', 'modal.evidence': 'Evidence',
+    'modal.why': 'Why', 'modal.pitch': 'Pitch angle', 'modal.link': 'Link',
+    'modal.resume': 'Resume', 'modal.notes': 'Notes', 'modal.save': 'Save Notes',
+    'tier1': 'Tier 1 — Highest Priority', 'tier2': 'Tier 2 — Strong Targets', 'tier3': 'Tier 3 — Worth Reaching',
+    'pill.high': 'high priority', 'pill.med': 'med priority',
+    'pill.email-ready': 'email ready', 'pill.awaiting': 'awaiting reply',
+    'hdr.sub': '{n} targets · {e} contacted · {i} interested · J1 Intern · Jul 1 2026 target',
+  },
+  vi: {
+    'header.title': '◈ Kế Hoạch J1 của Nga',
+    'btn.portfolio': 'Hồ Sơ ↗',
+    'stat.targets': 'Mục Tiêu',
+    'stat.targets.sub': 'công ty đã xác định',
+    'stat.interested': 'Quan Tâm',
+    'stat.interested.sub': 'phản hồi tích cực',
+    'stat.contacted': 'Đã Liên Hệ',
+    'stat.contacted.sub': 'email đã gửi',
+    'stat.passed': 'Bỏ Qua',
+    'stat.passed.sub': 'không phản hồi / từ chối',
+    'tl.title': 'Lộ Trình J1 — Bắt Đầu Tháng 7/2026',
+    'tl.s1': 'Nộp Đơn TT', 'tl.s2': '▸ Tiếp Cận Đợt 1', 'tl.s3': 'Nhận DS-2019',
+    'tl.s4': 'Phỏng Vấn ĐSQ', 'tl.s5': 'Đóng Dấu Visa', 'tl.s6': 'TN 16/6', 'tl.s7': 'BĐ 1/7',
+    'tl.today': 'Mar 22 ← HÔM NAY',
+    'sec.actions': 'Việc Cần Làm',
+    'act.1': 'Chọn nhà tài trợ — liên hệ Cultural Vistas + InterExchange để lấy báo giá',
+    'act.1.dl': 'Hạn 22/3 (HÔM NAY)',
+    'act.2': 'Quyết định: tìm công ty host qua outreach hay lập LLC',
+    'act.2.dl': 'Hạn 22/3 (HÔM NAY)',
+    'act.3': 'Gửi outreach đợt 1 — 30 công ty mục tiêu',
+    'act.3.dl': 'Hạn 22/3 → 29/3',
+    'act.4': 'Nộp đơn nhà tài trợ + kế hoạch đào tạo DS-7002',
+    'act.4.dl': 'Hạn 29/3',
+    'act.5': 'Nga: lấy chứng chỉ tiếng Anh (IELTS 5.5+ / TOEIC 550+ hoặc thư Duy Tân)',
+    'act.5.dl': 'Hạn 29/3',
+    'act.6': 'Nga: lấy giấy xác nhận sinh viên + bảng điểm từ Duy Tân',
+    'act.6.dl': 'Hạn 1/4',
+    'act.7': 'Nộp phí SEVIS I-901 ($220)',
+    'act.7.dl': 'Sau khi nhận DS-2019 (~14/4)',
+    'act.8': 'Đặt lịch phỏng vấn ĐSQ Mỹ TP.HCM hoặc Hà Nội — ngay sau khi nhận DS-2019',
+    'act.8.dl': 'Mục tiêu 15/4',
+    'sec.sponsors': 'Nhà Tài Trợ J1',
+    'sec.visa': 'Loại Visa: J1 Thực Tập ✓',
+    'visa.eligible': 'ĐỦ ĐIỀU KIỆN — 3 NGUỒN ĐỘC LẬP',
+    'ev1.claim': '<strong>Cửa sổ 12 tháng sau tốt nghiệp</strong> — quy định liên bang chính thức',
+    'ev1.quote': '"Thực tập sinh phải đang theo học toàn thời gian…hoặc đã tốt nghiệp từ cơ sở đó <strong>không quá 12 tháng trước ngày bắt đầu chương trình.</strong>"',
+    'ev1.tag': 'Luật Liên Bang Mỹ',
+    'ev2.claim': '<strong>Trang chính thức DOS BridgeUSA</strong> — xác nhận trực tiếp từ Bộ Ngoại Giao Mỹ',
+    'ev2.quote': '"Đã tốt nghiệp từ cơ sở đó <strong>không quá 12 tháng</strong> trước ngày bắt đầu chương trình."',
+    'ev2.tag': 'Trang Chính Thức DOS',
+    'ev3.claim': '<strong>IST Plus</strong> — nhà tài trợ J1 được DOS chỉ định, ngôn ngữ giống hệt',
+    'ev3.quote': '"Người nộp đơn phải <strong>trong vòng 12 tháng hoàn thành học tập</strong> tính từ ngày bắt đầu thực tập."',
+    'ev3.tag': 'Nhà Tài Trợ DOS',
+    'visa.analysis': 'Nga tốt nghiệp <strong style="color:var(--text)">16/6/2026</strong>. Chương trình bắt đầu <strong style="color:var(--text)">1/7/2026</strong> = 15 ngày sau TN. Nằm trong cửa sổ 12 tháng.<br><br><strong style="color:var(--red)">J-1 Trainee: KHÔNG đủ điều kiện</strong> — cần 1 năm kinh nghiệm làm việc trong ngành sau tốt nghiệp. Sớm nhất: giữa 2027.<br><br><strong style="color:var(--yellow)">Pitch cho nhà tuyển dụng:</strong> J-1 tự sắp xếp — ứng viên tự mang nhà tài trợ. <em>Không có giấy tờ, không phí</em> cho công ty host. Chỉ điền một mẫu DS-7002.',
+    'filter.all': 'Tất Cả', 'filter.notcontacted': 'Chưa Liên Hệ', 'filter.emailed': 'Đã Email',
+    'filter.responded': 'Đã Phản Hồi', 'filter.interested': 'Quan Tâm', 'filter.passed': 'Bỏ Qua',
+    'modal.status': 'Trạng Thái', 'modal.contact': 'Liên Hệ', 'modal.evidence': 'Bằng Chứng',
+    'modal.why': 'Lý Do', 'modal.pitch': 'Cách Tiếp Cận', 'modal.link': 'Liên Kết',
+    'modal.resume': 'Hồ Sơ', 'modal.notes': 'Ghi Chú', 'modal.save': 'Lưu Ghi Chú',
+    'tier1': 'Tầng 1 — Ưu Tiên Cao Nhất', 'tier2': 'Tầng 2 — Mục Tiêu Mạnh', 'tier3': 'Tầng 3 — Đáng Tiếp Cận',
+    'pill.high': 'ưu tiên cao', 'pill.med': 'ưu tiên tb',
+    'pill.email-ready': 'email sẵn sàng', 'pill.awaiting': 'chờ phản hồi',
+    'hdr.sub': '{n} mục tiêu · {e} đã liên hệ · {i} quan tâm · J1 Thực Tập · Mục tiêu 1/7/2026',
+  }
+};
+
+function t(key){ return I18N[LANG][key] || I18N.en[key] || key; }
+
+function applyI18n(){
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    const key = el.getAttribute('data-i18n');
+    const val = t(key);
+    if(val.includes('<')) el.innerHTML = val;
+    else el.textContent = val;
+  });
+}
+
+function toggleLang(){
+  LANG = LANG==='en' ? 'vi' : 'en';
+  document.getElementById('lang-btn').textContent = LANG==='en' ? 'VI' : 'EN';
+  document.documentElement.lang = LANG;
+  applyI18n();
+  render();
+}
+
+// ── DATA ──────────────────────────────────────────────────────────────────────
+const LS_KEY = 'nga-pipeline-v1';
+const RESUME_BASE = '/phantom-resume/api/candidates/mynga/resumes/';
+const DEFAULT_RESUME = 'resume_en_preview.jpg';
+const DEFAULT_RESUME_VI = 'resume_vi_preview.jpg';
+
+function loadState(){ try{ return JSON.parse(localStorage.getItem(LS_KEY)||'{}'); }catch(e){ return {}; } }
+function saveState(s){ localStorage.setItem(LS_KEY, JSON.stringify(s)); }
+
+// ev.level: 'confirmed' | 'contact' | 'no'
+// ev.what: short label shown on card
+// ev.quote: exact quoted text
+// ev.source: URL
+// ev.date: verification date
+const COMPANIES = [
+  // ── TIER 1: AGENCIES — CONFIRMED J1 PATH ──
+  {id:'globalmonday', name:'Global Monday', type:'J1 Placement Agency — USA HQ', tier:1, priority:'high',
+   contact:'globalmonday.org/about-us',
+   why:'J1 PLACEMENT AGENCY — they find the host company AND handle sponsorship. Seattle placements confirmed. Paid positions, fast placement (<4 weeks).',
+   why_vi:'AGENCY TUYỂN DỤNG J1 — họ tìm công ty host VÀ xử lý bảo lãnh. Đã xác nhận có vị trí tại Seattle. Vị trí có lương, đặt chỗ nhanh (<4 tuần).',
+   pitch:'Submit profile → they find host + arrange J1 simultaneously. Remove burden from Thomas finding host company.',
+   pitch_vi:'Nộp hồ sơ → họ tìm host + sắp xếp J1 cùng lúc. Loại bỏ gánh nặng tìm công ty host.',
+   link:'globalmonday.org',
+   ev:{level:'confirmed', what:'Confirmed: Seattle marketing placements',
+       quote:'"Global Monday works with companies providing paid J-1 Internship and Training positions across the United States in cities such as Seattle… business placements including marketing, finance, business development." Placement in under 4 weeks. 25 years experience, 50+ countries.',
+       source:'https://www.globalmonday.org/about-us', date:'Mar 23 2026'},
+   resume: DEFAULT_RESUME},
+  {id:'cicd-seattle', name:'Intrax/CICD Seattle', type:'J1 Sponsor — Seattle HQ since 1997', tier:1, priority:'high',
+   contact:'intsupport@intraxinc.com / +1 (877) 429-6753',
+   why:'LOCAL Seattle-HQ J1 sponsor (est. 1997, part of Intrax since 2022). Can do site visits locally, help find Seattle host companies directly.',
+   why_vi:'Nhà tài trợ J1 TRỤ SỞ tại Seattle (est. 1997). Có thể thăm địa điểm tại chỗ, hỗ trợ tìm công ty host ở Seattle trực tiếp.',
+   pitch:'Local presence = cheap site visit ($250 flat). Best option if Thomas creates LLC as host company — they know Seattle employers.',
+   pitch_vi:'Hiện diện địa phương = thăm địa điểm rẻ ($250 cố định). Lựa chọn tốt nhất nếu Thomas lập LLC làm host.',
+   link:'cicdgo.com',
+   ev:{level:'confirmed', what:'Confirmed: DOS-designated, Seattle HQ',
+       quote:'"CICD (Center for International Career Development) is headquartered in Seattle, WA and operates as a U.S. Department of State-designated J-1 Visa sponsor… Since 1997, CICD has provided thousands of participants with affordable J-1 visa programs."',
+       source:'https://www.cicdgo.com/about-us', date:'Mar 23 2026'},
+   resume: DEFAULT_RESUME},
+  {id:'bridgeaspire', name:'Bridge Aspire', type:'J1 Placement Agency — All-inclusive', tier:1, priority:'high',
+   contact:'bridgeaspire.com/paid-internships-usa',
+   why:'All-inclusive J1 placement agency: DS-7002, DS-2019, medical insurance, host company search, 24/7 support all included. Interns earn $2,000–$4,500/month.',
+   why_vi:'Agency J1 trọn gói: DS-7002, DS-2019, bảo hiểm y tế, tìm công ty host, hỗ trợ 24/7 đều bao gồm. Thực tập sinh kiếm $2,000–$4,500/tháng.',
+   pitch:'Pay $3,500–$5,000 program fee → they handle everything. Most interns recoup cost within 3–4 months.',
+   pitch_vi:'Trả phí $3,500–$5,000 → họ lo mọi thứ. Hầu hết thực tập sinh thu hồi chi phí trong 3–4 tháng.',
+   link:'bridgeaspire.com/paid-internships-usa/become-an-intern-or-trainee/',
+   ev:{level:'confirmed', what:'Confirmed: all-inclusive J1, $2–4.5K/mo',
+       quote:'"Bridge Aspire participants earn between $2,000 and $4,500 per month… all-inclusive services: eligibility verification, resume formatting, interview coordination with verified host companies, DS-7002 training plan, DS-2019 visa documentation, medical insurance, 24/7 support."',
+       source:'https://www.bridgeaspire.com/paid-internships-usa/become-an-intern-or-trainee/', date:'Mar 23 2026'},
+   resume: DEFAULT_RESUME},
+  {id:'internships-usa', name:'Internships USA (EU)', type:'J1 Placement Agency — Seattle confirmed', tier:1, priority:'high',
+   contact:'internships-usa.eu/internships-and-traineeships-in-seattle/',
+   why:'Confirmed Seattle marketing internship placements. Handles both J1 sponsorship and host company matching.',
+   why_vi:'Đã xác nhận có vị trí marketing tại Seattle. Xử lý cả bảo lãnh J1 và tìm công ty host.',
+   pitch:'Submit profile → matched to Seattle marketing role + J1 arranged in one package.',
+   pitch_vi:'Nộp hồ sơ → ghép cặp với vị trí marketing tại Seattle + J1 được sắp xếp trong một gói.',
+   link:'internships-usa.eu/internships-and-traineeships-in-seattle/',
+   ev:{level:'confirmed', what:'Confirmed: Seattle marketing placements page',
+       quote:'Dedicated Seattle internship page lists marketing positions. "Paid internships and traineeships in Seattle, WA" — confirmed marketing track available.',
+       source:'https://internships-usa.eu/internships-and-traineeships-in-seattle/', date:'Mar 23 2026'},
+   resume: DEFAULT_RESUME},
+
+  // ── TIER 1: DIRECT OUTREACH — CONTACT HR ──
+  {id:'remitly', name:'Remitly', type:'Fintech — Seattle HQ', tier:1, priority:'high',
+   contact:'hr@remitly.com / linkedin.com/company/remitly',
+   why:'Immigrant community mission = perfect match for Vietnamese candidate. Blog content shows J1 familiarity. Strong marketing team, Seattle HQ.',
+   why_vi:'Sứ mệnh cộng đồng nhập cư = phù hợp hoàn hảo. Blog cho thấy quen thuộc với J1. Trụ sở Seattle.',
+   pitch:'Vietnamese-American story, Southeast Asian market expertise, immigrant mission alignment.',
+   pitch_vi:'Câu chuyện Việt-Mỹ, chuyên môn thị trường Đông Nam Á, phù hợp sứ mệnh nhập cư.',
+   link:'remitly.com/careers',
+   ev:{level:'contact', what:'No explicit J1 policy — contact HR',
+       quote:'Remitly publishes J1 visa educational guides ("The Definitive Guide to the J-1 Visa") showing familiarity. Careers page has no explicit J1 policy statement. Self-arranged J1 is worth asking about directly.',
+       source:'https://www.remitly.com/blog/immigration/the-us-j1-visa/', date:'Mar 23 2026'},
+   resume:'Mynga_Remitly_preview.jpg'},
+  {id:'tiktok-sea', name:'TikTok Seattle', type:'Social Media — Seattle office', tier:1, priority:'high',
+   contact:'careers.tiktok.com (portal) — search "marketing intern"',
+   why:'Asia-Pacific marketing, identity match, heavy international hiring. Sponsors H-1B for FT roles — J1 intern (self-arranged, no employer cost) worth asking.',
+   why_vi:'Marketing châu Á-TBD, phù hợp bản sắc, tuyển dụng quốc tế mạnh. H-1B cho full-time — J1 self-arranged đáng hỏi.',
+   pitch:'Native TikTok creator, Vietnamese market fluency, 8K organic following, TikTok/Meta analytics experience.',
+   pitch_vi:'Creator TikTok bản xứ, thành thạo thị trường Việt Nam, 8K lượt theo dõi organic.',
+   link:'careers.tiktok.com',
+   ev:{level:'contact', what:'No J1 intern policy — HR ask needed',
+       quote:'"Expect candidates to have proper work authorization within the country they are applying." H-1B confirmed for FT roles (979 LCAs FY2025). No explicit J1 intern acceptance. Self-arranged J1 (employer just signs DS-7002, no visa costs) should be raised directly with recruiter.',
+       source:'https://lifeattiktok.com/earlycareers', date:'Mar 23 2026'},
+   resume:'Mynga_TikTok_preview.jpg'},
+  {id:'copacino', name:'Copacino+Fujikado', type:'Boutique Ad Agency — Seattle 98101', tier:1, priority:'high',
+   contact:'LetsChat@copacino.com / (206) 467-6610',
+   why:'Top Seattle indie agency, year-round 3-month rotating intern program. No explicit J1 restriction found.',
+   why_vi:'Agency indie hàng đầu Seattle, chương trình thực tập luân phiên 3 tháng. Không tìm thấy hạn chế J1 rõ ràng.',
+   pitch:'Award-winning international student (AIGC Gold Singapore 2024), editorial portfolio, bilingual copywriting.',
+   pitch_vi:'Sinh viên quốc tế đoạt giải (AIGC Gold Singapore 2024), portfolio biên tập, copywriting song ngữ.',
+   link:'copacino.com/internships',
+   ev:{level:'contact', what:'Intern program confirmed — J1 policy unknown',
+       quote:'Internship page confirms year-round 3-month rotations, one reserved for first-gen college students. No J1/visa language found. Small enough to be flexible if approached correctly — self-arranged J1 means zero paperwork for them.',
+       source:'https://www.copacino.com/internships', date:'Mar 23 2026'},
+   resume:'Mynga_Copacino_preview.jpg'},
+  {id:'mckinstry', name:'McKinstry', type:'Engineering/Sustainability — Seattle HQ', tier:1, priority:'high',
+   contact:'mckinstry.com/join-us/jobs (BLUE intern program)',
+   why:'B.L.U.E. intern program confirmed active. No explicit J1 restriction. Mid-size company = flexibility.',
+   why_vi:'Chương trình B.L.U.E. intern đang hoạt động. Không có hạn chế J1 rõ ràng. Công ty vừa = linh hoạt hơn.',
+   pitch:'Marketing intern with data analytics and campaign execution background.',
+   pitch_vi:'Thực tập marketing với nền tảng phân tích dữ liệu và thực thi chiến dịch.',
+   link:'mckinstry.com/join-us/blue-internship-program/',
+   ev:{level:'contact', what:'Intern program confirmed — J1 policy unknown',
+       quote:'B.L.U.E. program page confirmed at mckinstry.com/join-us/blue-internship-program/ — no visa/J1 mention. Only 1 H-1B LCA filed 2022–2024 (myvisajobs.com) suggesting limited prior sponsorship — but self-arranged J1 costs them nothing beyond signing DS-7002.',
+       source:'https://www.mckinstry.com/join-us/blue-internship-program/', date:'Mar 23 2026'},
+   resume:'Mynga_McKinstry_preview.jpg'},
+  {id:'holland', name:'Holland America Line', type:'Cruise/Travel — Seattle HQ', tier:1, priority:'high',
+   contact:'careers.hollandamerica.com',
+   why:'Active internship program (Social Media, HR, Maritime ops). APAC/Vietnam-route relevance. No J1 restriction found.',
+   why_vi:'Chương trình thực tập đang hoạt động (Social Media, HR). Tuyến APAC/Việt Nam liên quan. Không tìm thấy hạn chế J1.',
+   pitch:'Vietnamese native, Southeast Asian consumer behavior expertise, multilingual marketing for APAC routes.',
+   pitch_vi:'Người Việt Nam bản địa, chuyên gia hành vi người tiêu dùng ĐNA, marketing đa ngôn ngữ cho tuyến APAC.',
+   link:'careers.hollandamerica.com',
+   ev:{level:'contact', what:'Intern program confirmed — J1 policy unknown',
+       quote:'UW Career Center posted Holland America 2026 Summer Social Media internship (Nov 2025). HAL careers site active. No J1/visa language on internship pages. APAC routes make Vietnamese candidate especially relevant — contact recruiting@hollandamericagroup.com directly.',
+       source:'https://careers.uw.edu/blog/2025/11/07/holland-america-line-2026-internship-social-media-summer/', date:'Mar 23 2026'},
+   resume:'Mynga_Holland_preview.jpg'},
+
+  // ── TIER 2: STRONG TARGETS ──
+  {id:'tableau', name:'Salesforce / Tableau', type:'Tech — Seattle office', tier:2, priority:'med',
+   contact:'careers.salesforce.com',
+   why:'CONFIRMED live Summer 2026 Global Paid Media marketing intern posting. Large org = structured J1 process worth asking.',
+   why_vi:'Đã xác nhận có vị trí thực tập marketing Hè 2026 đang mở. Tổ chức lớn = quy trình J1 có cấu trúc.',
+   pitch:'Data analytics fluency, marketing automation, campaign measurement background.',
+   ev:{level:'contact', what:'Live 2026 role confirmed — J1 policy unknown',
+       quote:'Confirmed: "Summer 2026 Intern — Global Field Marketing, Paid Media" posted at careers.salesforce.com (job ID jr329802). No explicit J1 policy stated. Large company with international offices = higher likelihood of J1 flexibility.',
+       source:'https://careers.salesforce.com/en/jobs/jr329802/summer-2026-intern-global-field-marketing-paid-media/', date:'Mar 23 2026'},
+   link:'careers.salesforce.com', resume:'Mynga_Salesforce_preview.jpg'},
+  {id:'expedia', name:'Expedia Group', type:'Travel Tech — Seattle HQ', tier:2, priority:'med',
+   contact:'careers.expediagroup.com',
+   why:'International intern program across global locations. No explicit J1 policy found — Glassdoor notes visa sponsorship comes up in interviews.',
+   pitch:'Travel-oriented Vietnamese marketing student with digital content and social media analytics skills.',
+   ev:{level:'contact', what:'International program — J1 policy unclear',
+       quote:'Glassdoor review (interview): "They should ask basic questions like — will the candidate need visa sponsorship before scheduling an interview." Suggests it is a live consideration but no confirmed J1 acceptance.',
+       source:'https://www.glassdoor.com/Interview/None-They-should-ask-basic-questions-like-will-the-candidate-need-visa-sponsorship-before-scheduling-an-interview-QTN_3705573.htm', date:'Mar 23 2026'},
+   link:'careers.expediagroup.com', resume:'Mynga_Expedia_preview.jpg'},
+  {id:'sap-sea', name:'SAP Seattle', type:'Enterprise Software — Seattle office', tier:2, priority:'med',
+   contact:'jobs.sap.com',
+   why:'German multinational = international-friendly culture. Active marketing intern hirer. J1 common in German multinationals.',
+   pitch:'Data-driven marketing with analytics background relevant to SAP ecosystem.',
+   ev:{level:'contact', what:'International company — verify J1 policy',
+       quote:'No direct J1 evidence found. SAP is a German multinational with established international hiring practices globally. SAP jobs.sap.com career page active. Self-arranged J1 worth raising — they bear no sponsorship costs.',
+       source:'https://jobs.sap.com', date:'Mar 23 2026'},
+   link:'jobs.sap.com', resume: DEFAULT_RESUME},
+  {id:'wunderman', name:'VML / Wunderman Thompson', type:'WPP Agency — Seattle office', tier:2, priority:'med',
+   contact:'vml.com/careers',
+   why:'WPP global agency with structured intern programs. International candidates common in global holding companies.',
+   pitch:'Full-funnel campaign experience across SMS/MMS/email/push, print design portfolio.',
+   ev:{level:'contact', what:'Global agency — verify J1 policy',
+       quote:'No direct J1 evidence found. WPP/Publicis agencies are global holding companies with international staffing — J1 interns are common in agency networks. Verify directly with Seattle office.',
+       source:'https://vml.com/careers', date:'Mar 23 2026'},
+   link:'vml.com/careers', resume:'Mynga_Copacino_preview.jpg'},
+
+  // ── TIER 2: EXPLICIT NO — FLAG BUT KEEP FOR REFERENCE ──
+  {id:'tmobile', name:'T-Mobile ⚠', type:'Telecom — Bellevue WA [VISA NO]', tier:2, priority:'med',
+   contact:'careers.t-mobile.com',
+   why:'EXPLICITLY stated no visa sponsorship for interns. Include here for reference only — do not contact for J1.',
+   pitch:'Would be ideal due to $26–47/hr intern pay and mobile marketing org, but blanket no-visa policy blocks J1 hosting.',
+   ev:{level:'no', what:'EXPLICIT NO — direct quote from careers page',
+       quote:'"The employer does not sponsor work visas for internship positions, which also applies to individuals with F-1 student status who desire sponsorship after they complete their education." — T-Mobile careers page, all internship job postings.',
+       source:'https://careers.t-mobile.com/internship', date:'Mar 23 2026'},
+   link:'careers.t-mobile.com', resume:'Mynga_TMobile_preview.jpg'},
+  {id:'nordstrom', name:'Nordstrom ⚠', type:'Retail/Fashion — Seattle HQ [VISA NO]', tier:2, priority:'med',
+   contact:'careers.nordstrom.com',
+   why:'EXPLICITLY stated no visa sponsorship for interns. Strong internship program but visa-blocked.',
+   pitch:'Perfect fit for Nga (fashion background, 8K following) but no-visa policy is unambiguous.',
+   ev:{level:'no', what:'EXPLICIT NO — direct quote from careers FAQ',
+       quote:'"At this time, we are unable to sponsor visas or work authorizations for internship roles." — Nordstrom Careers FAQ. Accepts F-1 CPT/OPT only.',
+       source:'https://careers.nordstrom.com/careers', date:'Mar 23 2026'},
+   link:'careers.nordstrom.com', resume:'Mynga_Nordstrom_preview.jpg'},
+
+  // ── TIER 3: OUTREACH WORTHY ──
+  {id:'starbucks', name:'Starbucks', type:'F&B / Brand — Seattle HQ', tier:3, priority:'med',
+   contact:'careers.starbucks.com',
+   why:'Seattle iconic brand, 10-week internship program. No visa policy found explicitly.',
+   pitch:'Vietnam is a major Starbucks market — native Vietnamese insight on APAC consumer behavior.',
+   ev:{level:'contact', what:'Intern program confirmed — J1 policy unknown',
+       quote:'"College students considered in their junior year (or third year for international students)" — clarifies eligibility, not sponsorship. No J1/visa language on internship pages. H-1B sponsored for FT roles only.',
+       source:'https://careers.starbucks.com/discover-opportunities/internships/', date:'Mar 23 2026'},
+   link:'careers.starbucks.com', resume:'Mynga_Starbucks_preview.jpg'},
+  {id:'amazon-mktg', name:'Amazon Marketing', type:'Tech — Seattle HQ', tier:3, priority:'med',
+   contact:'amazon.jobs (search marketing intern)',
+   why:'10,000 interns from 45 countries per year. Massive marketing org, international hire history.',
+   pitch:'Ecommerce marketing background (ran own vintage store), data-driven campaigns, bilingual.',
+   ev:{level:'contact', what:'International intern history — verify policy',
+       quote:'"Amazon hires approximately 10,000 interns annually from over 45 countries" — Amazon.jobs about page. No explicit J1 intern policy stated. Self-arranged J1 worth raising in application.',
+       source:'https://amazon.jobs', date:'Mar 23 2026'},
+   link:'amazon.jobs', resume:'Mynga_Amazon_preview.jpg'},
+  {id:'zillow', name:'Zillow', type:'PropTech — Seattle HQ', tier:3, priority:'med',
+   contact:'zillow.com/careers',
+   why:'Large Seattle tech co, marketing team, structured intern program.',
+   pitch:'Data analytics, social media strategy, digital marketing execution.',
+   ev:{level:'contact', what:'No J1 evidence found — contact HR',
+       quote:'No J1-specific evidence found on careers pages or public sources. Zillow has structured intern program but no international/visa policy stated publicly.',
+       source:'https://zillow.com/careers', date:'Mar 23 2026'},
+   link:'zillow.com/careers', resume: DEFAULT_RESUME},
+  {id:'holland-2', name:'Holland America — via Agency', type:'Via Global Monday / Bridge Aspire', tier:3, priority:'med',
+   contact:'globalmonday.org or bridgeaspire.com (request Holland America placement)',
+   why:'Request HAL as target host company through placement agency. Agencies have existing relationships with Seattle companies.',
+   pitch:'Request specifically by name — agency can approach HAL on Nga\'s behalf with J1 framework already set.',
+   ev:{level:'contact', what:'Agency path — circumvents direct HR barrier',
+       quote:'Agencies like Global Monday and Bridge Aspire approach host companies on behalf of applicants — removes need for Nga to navigate visa policy directly. HAL internship confirmed open via UW Career Center (Nov 2025).',
+       source:'https://www.globalmonday.org/about-us', date:'Mar 23 2026'},
+   link:'globalmonday.org', resume:'Mynga_Holland_preview.jpg'},
+];
+
+let currentFilter = 'all';
+let currentModal = null;
+let showIneligible = false;
+
+function toggleIneligible(){
+  showIneligible = !showIneligible;
+  const btn = document.getElementById('ineligible-toggle');
+  const inelCount = COMPANIES.filter(c=>c.ev&&c.ev.level==='no').length;
+  btn.textContent = showIneligible ? `Hide Ineligible (${inelCount})` : `Show Ineligible (${inelCount})`;
+  btn.style.opacity = showIneligible ? '1' : '0.6';
+  render();
+}
+
+function getStatus(id){ return (loadState()[id]||{}).status || 'not-contacted'; }
+function getNotes(id){ return (loadState()[id]||{}).notes || ''; }
+
+function setFilter(f){
+  currentFilter = f;
+  document.querySelectorAll('.fbtn').forEach(b=>b.classList.toggle('active', b.dataset.f===f));
+  render();
+}
+
+function statusLabel(st){
+  const map = {
+    'not-contacted': t('filter.notcontacted'),
+    'emailed': t('filter.emailed'),
+    'responded': t('filter.responded'),
+    'interested': t('filter.interested'),
+    'passed': t('filter.passed'),
+  };
+  return map[st] || st;
+}
+
+function render(){
+  // Eligible = not explicitly J1-ineligible (ev.level !== 'no'), unless showIneligible toggled
+  const eligible = COMPANIES.filter(c => !c.ev || c.ev.level !== 'no');
+  const inelCount = COMPANIES.filter(c=>c.ev&&c.ev.level==='no').length;
+  const pool = showIneligible ? COMPANIES : eligible;
+  const filtered = pool.filter(c => currentFilter==='all' || getStatus(c.id)===currentFilter);
+
+  // Stats count only eligible companies
+  document.getElementById('cnt-total').textContent = eligible.length;
+  document.getElementById('cnt-interested').textContent = eligible.filter(c=>getStatus(c.id)==='interested').length;
+  document.getElementById('cnt-emailed').textContent = eligible.filter(c=>['emailed','responded','interested'].includes(getStatus(c.id))).length;
+  document.getElementById('cnt-passed').textContent = eligible.filter(c=>getStatus(c.id)==='passed').length;
+
+  // Update toggle button label
+  const inelBtn = document.getElementById('ineligible-toggle');
+  if(inelBtn) inelBtn.textContent = (showIneligible ? 'Hide' : 'Show') + ` Ineligible (${inelCount})`;
+
+  const ni = eligible.filter(c=>getStatus(c.id)==='interested').length;
+  const ne = eligible.filter(c=>['emailed','responded','interested'].includes(getStatus(c.id))).length;
+  const sub = t('hdr.sub').replace('{n}', COMPANIES.length).replace('{e}', ne).replace('{i}', ni);
+  document.getElementById('hdr-sub').textContent = sub;
+
+  const groups = [
+    {label: t('tier1'), items: filtered.filter(c=>c.tier===1)},
+    {label: t('tier2'), items: filtered.filter(c=>c.tier===2)},
+    {label: t('tier3'), items: filtered.filter(c=>c.tier===3)},
+  ].filter(g=>g.items.length>0);
+
+  document.getElementById('company-list').innerHTML = groups.map(g=>`
+    <div>
+      <div class="grp-hdr">${g.label}<span class="grp-cnt">${g.items.length}</span></div>
+      <div class="cg">
+        ${g.items.map(c=>{
+          const st = getStatus(c.id);
+          const nt = getNotes(c.id);
+          const why = LANG==='vi' && c.why_vi ? c.why_vi : c.why;
+          const evLvl = c.ev ? c.ev.level : 'contact';
+          const evLabels = {confirmed:'✓ J1 Confirmed', contact:'? Contact HR', no:'✗ Visa No'};
+          return `<div class="cc" onclick="openModal('${c.id}')">
+            <div class="cc-top">
+              <div class="cc-name">${c.name}</div>
+              <div class="cc-badge ${st}">${statusLabel(st)}</div>
+            </div>
+            <div class="cc-type">${c.type}</div>
+            <div class="cc-contact">${c.contact.split('/')[0].trim()}</div>
+            <div class="cc-note">${why.slice(0,90)}${why.length>90?'…':''}</div>
+            ${nt?`<div class="cc-note" style="color:var(--cyan);margin-top:4px">✎ ${nt.slice(0,60)}${nt.length>60?'…':''}</div>`:''}
+            <div class="cc-pills" style="justify-content:space-between;align-items:flex-end">
+              <div style="display:flex;gap:4px;flex-wrap:wrap">
+                <span class="cc-pill ${c.priority}">${c.priority==='high' ? t('pill.high') : t('pill.med')}</span>
+                ${st==='not-contacted'?`<span class="cc-pill">${t('pill.email-ready')}</span>`:''}
+                ${st==='emailed'?`<span class="cc-pill">${t('pill.awaiting')}</span>`:''}
+              </div>
+              <span class="ev-badge ${evLvl}">${evLabels[evLvl]||evLvl}</span>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+  `).join('');
+
+  applyI18n();
+}
+
+function openModal(id){
+  const c = COMPANIES.find(x=>x.id===id);
+  currentModal = id;
+  document.getElementById('m-name').textContent = c.name;
+  document.getElementById('m-type').textContent = c.type;
+  document.getElementById('m-status').value = getStatus(id);
+  document.getElementById('m-contact').innerHTML = c.contact.replace(/(https?:\/\/\S+)/g,'<a href="$1" target="_blank">$1</a>');
+
+  const why = LANG==='vi' && c.why_vi ? c.why_vi : c.why;
+  const pitch = LANG==='vi' && c.pitch_vi ? c.pitch_vi : c.pitch;
+  document.getElementById('m-why').textContent = why;
+  document.getElementById('m-pitch').textContent = pitch;
+
+  // Evidence block
+  const ev = c.ev || {level:'contact', what:'No evidence data', quote:'', source:'', date:''};
+  const evTitles = {confirmed:'✓ CONFIRMED J1 COMPATIBLE', contact:'? J1 STATUS UNVERIFIED — CONTACT HR', no:'✗ EXPLICIT NO — VISA SPONSORSHIP REFUSED'};
+  document.getElementById('m-ev-block').innerHTML = `
+    <div class="ev-modal-level ${ev.level}">${evTitles[ev.level]||ev.level.toUpperCase()}</div>
+    <div class="ev-modal-quote">${ev.what}</div>
+    <div class="ev-modal-quote" style="margin-top:4px">${ev.quote}</div>
+    <div class="ev-modal-src">
+      <a href="${ev.source}" target="_blank">${ev.source.replace('https://','').split('/')[0]}</a>
+      <span class="ev-modal-date">verified ${ev.date}</span>
+    </div>
+  `;
+  document.getElementById('m-link').innerHTML = `<a href="https://${c.link}" target="_blank">${c.link}</a>`;
+  document.getElementById('m-notes').value = getNotes(id);
+
+  // Resume preview
+  const resumeFile = (LANG==='vi') ? 'resume_vi_preview.jpg' : (c.resume || DEFAULT_RESUME);
+  const resumeUrl = RESUME_BASE + resumeFile;
+  const thumb = document.getElementById('m-resume-thumb');
+  thumb.src = resumeUrl;
+  thumb.alt = c.name + ' — resume preview';
+  const cap = LANG==='vi' ? 'Nhấn để phóng to' : 'Click to enlarge';
+  document.getElementById('m-resume-caption').textContent = cap;
+
+  applyI18n();
+  document.getElementById('modal').classList.add('open');
+}
+
+function closeModal(){ document.getElementById('modal').classList.remove('open'); currentModal=null; }
+
+function openLightbox(src){
+  document.getElementById('lightbox-img').src = src;
+  document.getElementById('lightbox').classList.add('open');
+}
+function closeLightbox(){ document.getElementById('lightbox').classList.remove('open'); }
+
+function saveStatus(){
+  if(!currentModal) return;
+  const s = loadState();
+  if(!s[currentModal]) s[currentModal]={};
+  s[currentModal].status = document.getElementById('m-status').value;
+  saveState(s);
+  render();
+}
+
+function saveNotes(){
+  if(!currentModal) return;
+  const s = loadState();
+  if(!s[currentModal]) s[currentModal]={};
+  s[currentModal].status = document.getElementById('m-status').value;
+  s[currentModal].notes = document.getElementById('m-notes').value;
+  saveState(s);
+  closeModal();
+  render();
+}
+
+document.addEventListener('keydown', e=>{
+  if(e.key==='Escape'){ closeLightbox(); closeModal(); }
+});
+
+document.getElementById('ts-badge').textContent = new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+
+render();
+</script>
+</body>
+</html>

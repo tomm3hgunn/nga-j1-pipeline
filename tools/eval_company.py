@@ -1,52 +1,48 @@
 """
-Company J1 eligibility evaluator
-Checks a company's careers page for J1/visa language and updates data/companies.json.
+Company J1 eligibility evaluator — adds and re-evaluates companies in the DB.
 
 Usage:
-    python3 tools/eval_company.py --id remitly
-    python3 tools/eval_company.py --all        # re-eval all 'contact' level entries
-    python3 tools/eval_company.py --add        # interactive: add a new company
+    python3 tools/eval_company.py --add              # interactive: add a new company
+    python3 tools/eval_company.py --id remitly       # re-scrape one company
+    python3 tools/eval_company.py --all              # re-scrape all 'contact' companies
+    python3 tools/eval_company.py                    # show counts by ev_level
 
 Requires: playwright (pip install playwright && playwright install chromium)
 """
-import json, sys, argparse
+import sqlite3, sys, argparse
 from pathlib import Path
+from datetime import datetime
 
-BASE = Path(__file__).parent.parent
-COMPANIES_PATH = BASE / "data" / "companies.json"
+DB = Path(__file__).parent.parent / "pipeline.db"
 
-INDICATORS_YES = [
-    "j-1", "j1", "j1 visa", "exchange visitor", "ds-2019", "ds-7002",
-    "sevis", "cultural exchange", "intern visa", "visa sponsorship available",
-    "we sponsor", "sponsorship provided",
+SIGNALS_NO = [
+    "does not sponsor work visas for internship",
+    "unable to sponsor visas",
+    "cannot sponsor",
+    "no visa sponsorship",
+    "not able to provide visa",
+    "must be authorized to work",
+    "work authorization required",
+    "f-1 cpt/opt only",
 ]
-INDICATORS_NO = [
-    "does not sponsor", "unable to sponsor", "cannot sponsor",
-    "no visa sponsorship", "not able to provide visa", "must be authorized",
-    "work authorization required", "us work authorization",
+SIGNALS_YES = [
+    "j-1", "j1 visa", "j1 intern", "exchange visitor",
+    "ds-2019", "ds-7002", "sevis",
+    "cultural exchange", "visa sponsorship available", "we sponsor",
 ]
 
-def check_page_text(text: str) -> dict:
-    text_lower = text.lower()
-    hits_yes = [kw for kw in INDICATORS_YES if kw in text_lower]
-    hits_no  = [kw for kw in INDICATORS_NO  if kw in text_lower]
-    if hits_no:
-        return {"verdict": "no", "signals": hits_no}
-    if hits_yes:
-        return {"verdict": "confirmed", "signals": hits_yes}
-    return {"verdict": "contact", "signals": []}
+def get_db():
+    conn = sqlite3.connect(DB)
+    conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA foreign_keys=ON")
+    return conn
 
-def eval_company(company: dict) -> dict:
-    """Scrape the company's careers page and update ev dict."""
+def scrape_page(url: str) -> str:
     try:
         from playwright.sync_api import sync_playwright
     except ImportError:
         print("playwright not installed — run: pip install playwright && playwright install chromium")
-        return company
-
-    url = company.get("ev", {}).get("source") or f"https://{company['link']}"
-    print(f"  Checking: {url}")
-
+        return ""
     with sync_playwright() as p:
         browser = p.chromium.launch(executable_path="/usr/bin/chromium", args=["--no-sandbox"])
         page = browser.new_page()
@@ -54,86 +50,128 @@ def eval_company(company: dict) -> dict:
             page.goto(url, timeout=15000, wait_until="domcontentloaded")
             text = page.inner_text("body")
         except Exception as e:
-            print(f"  Error loading page: {e}")
+            print(f"  Error: {e}")
             text = ""
         browser.close()
+    return text
 
-    result = check_page_text(text)
-    print(f"  Verdict: {result['verdict']} | Signals: {result['signals']}")
+def evaluate_text(text: str) -> dict:
+    low = text.lower()
+    hits_no  = [s for s in SIGNALS_NO  if s in low]
+    hits_yes = [s for s in SIGNALS_YES if s in low]
+    if hits_no:
+        return {"level": "no",        "signals": hits_no}
+    if hits_yes:
+        return {"level": "confirmed", "signals": hits_yes}
+    return {"level": "contact",   "signals": []}
 
-    # Update ev in company dict
-    if "ev" not in company:
-        company["ev"] = {}
-    company["ev"]["level"] = result["verdict"]
-    if result["signals"]:
-        company["ev"]["signals"] = result["signals"]
+def update_ev(company_id: str, result: dict, source_url: str):
+    conn = get_db()
+    conn.execute("""
+        UPDATE companies SET
+            ev_level = ?,
+            ev_what  = ?,
+            ev_date  = ?
+        WHERE id = ?
+    """, (result["level"],
+          f"Auto-detected signals: {', '.join(result['signals']) or 'none'}",
+          datetime.utcnow().strftime("%-d %b %Y"),
+          company_id))
+    conn.commit()
+    conn.close()
 
-    return company
-
-def save(companies):
-    with open(COMPANIES_PATH, "w") as f:
-        json.dump(companies, f, indent=2, ensure_ascii=False)
-    print(f"Saved {len(companies)} companies to {COMPANIES_PATH}")
+def show_counts():
+    conn = get_db()
+    rows = conn.execute(
+        "SELECT ev_level, COUNT(*) n FROM companies GROUP BY ev_level"
+    ).fetchall()
+    conn.close()
+    total = sum(r["n"] for r in rows)
+    print(f"Companies in DB: {total}")
+    for r in rows:
+        print(f"  {r['ev_level']:12} {r['n']}")
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--id", help="Company ID to evaluate")
-    parser.add_argument("--all", action="store_true", help="Re-evaluate all 'contact' level companies")
+    parser.add_argument("--id",  help="Re-evaluate one company by ID")
+    parser.add_argument("--all", action="store_true", help="Re-evaluate all 'contact' companies")
     parser.add_argument("--add", action="store_true", help="Interactive: add a new company")
     args = parser.parse_args()
 
-    with open(COMPANIES_PATH) as f:
-        companies = json.load(f)
-
     if args.id:
-        idx = next((i for i, c in enumerate(companies) if c["id"] == args.id), None)
-        if idx is None:
-            print(f"Company '{args.id}' not found")
+        conn = get_db()
+        row = conn.execute("SELECT * FROM companies WHERE id=?", (args.id,)).fetchone()
+        conn.close()
+        if not row:
+            print(f"Company '{args.id}' not found in DB")
             return
-        companies[idx] = eval_company(companies[idx])
-        save(companies)
+        url = row["ev_source"] or f"https://{row['link']}"
+        print(f"Scraping: {url}")
+        text = scrape_page(url)
+        result = evaluate_text(text)
+        print(f"Verdict: {result['level']} | Signals: {result['signals']}")
+        update_ev(args.id, result, url)
+        print("Updated.")
 
     elif args.all:
-        to_eval = [c for c in companies if (c.get("ev") or {}).get("level") == "contact"]
-        print(f"Evaluating {len(to_eval)} companies with 'contact' status...")
-        for i, company in enumerate(companies):
-            if (company.get("ev") or {}).get("level") == "contact":
-                print(f"\n[{i+1}/{len(companies)}] {company['name']}")
-                companies[companies.index(company)] = eval_company(company)
-        save(companies)
+        conn = get_db()
+        rows = conn.execute(
+            "SELECT id, name, ev_source, link FROM companies WHERE ev_level='contact'"
+        ).fetchall()
+        conn.close()
+        print(f"Re-evaluating {len(rows)} companies...")
+        for r in rows:
+            url = r["ev_source"] or f"https://{r['link']}"
+            print(f"\n{r['name']} — {url}")
+            text = scrape_page(url)
+            result = evaluate_text(text)
+            print(f"  {result['level']} | {result['signals']}")
+            update_ev(r["id"], result, url)
+        print("\nDone.")
 
     elif args.add:
-        print("=== Add new company ===")
-        c = {
-            "id": input("ID (slug, e.g. 'acme-corp'): ").strip(),
-            "name": input("Name: ").strip(),
-            "type": input("Type (e.g. 'Agency — Seattle WA'): ").strip(),
-            "tier": int(input("Tier (1/2/3): ").strip()),
-            "priority": input("Priority (high/med): ").strip(),
-            "contact": input("Contact (email or URL): ").strip(),
-            "why": input("Why target? ").strip(),
-            "pitch": input("Pitch angle: ").strip(),
-            "link": input("Careers URL (no https://): ").strip(),
-            "ev": {
-                "level": "contact",
-                "what": "Not yet evaluated",
-                "quote": "",
-                "source": "",
-                "date": ""
-            },
-            "resume": "resume_en_preview.jpg"
+        print("=== Add company to DB ===")
+        fields = {
+            "id":       input("ID (slug, e.g. acme-corp): ").strip(),
+            "name":     input("Name: ").strip(),
+            "type":     input("Type (e.g. Agency — Seattle WA): ").strip(),
+            "tier":     int(input("Tier (1/2/3): ").strip()),
+            "priority": input("Priority (high/med): ").strip() or "med",
+            "contact":  input("Contact (email or URL): ").strip(),
+            "why":      input("Why target? ").strip(),
+            "pitch":    input("Pitch angle: ").strip(),
+            "link":     input("Careers URL (no https://): ").strip(),
+            "ev_source":input("Evidence URL to scrape: ").strip(),
         }
-        companies.append(c)
-        save(companies)
-        print(f"Added {c['name']}. Run --id {c['id']} to evaluate J1 eligibility.")
+        # Auto-scrape
+        if fields["ev_source"]:
+            print(f"Scraping {fields['ev_source']}...")
+            text = scrape_page(fields["ev_source"])
+            result = evaluate_text(text)
+            print(f"Verdict: {result['level']} | Signals: {result['signals']}")
+        else:
+            result = {"level": "contact", "signals": []}
+
+        conn = get_db()
+        conn.execute("""
+            INSERT INTO companies
+                (id,name,type,tier,priority,contact,why,pitch,link,
+                 ev_level,ev_what,ev_source,ev_date,resume)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+        """, (fields["id"], fields["name"], fields["type"], fields["tier"],
+              fields["priority"], fields["contact"], fields["why"],
+              fields["pitch"], fields["link"],
+              result["level"],
+              f"Auto-detected: {', '.join(result['signals']) or 'not yet evaluated'}",
+              fields["ev_source"],
+              datetime.utcnow().strftime("%-d %b %Y"),
+              "resume_en_preview.jpg"))
+        conn.commit()
+        conn.close()
+        print(f"Added {fields['name']} (ev_level: {result['level']})")
 
     else:
-        parser.print_help()
-        print("\nCurrent company count by ev.level:")
-        from collections import Counter
-        counts = Counter((c.get("ev") or {}).get("level", "unknown") for c in companies)
-        for lvl, n in sorted(counts.items()):
-            print(f"  {lvl}: {n}")
+        show_counts()
 
 if __name__ == "__main__":
     main()

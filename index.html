@@ -507,13 +507,34 @@ function toggleLang(){
 }
 
 // ── DATA ──────────────────────────────────────────────────────────────────────
-const LS_KEY = 'nga-pipeline-v1';
-const RESUME_BASE = '/phantom-resume/api/candidates/mynga/resumes/';
+const RESUME_BASE = '/nga-pipeline/api/resumes/';
 const DEFAULT_RESUME = 'resume_en_preview.jpg';
 const DEFAULT_RESUME_VI = 'resume_vi_preview.jpg';
 
-function loadState(){ try{ return JSON.parse(localStorage.getItem(LS_KEY)||'{}'); }catch(e){ return {}; } }
-function saveState(s){ localStorage.setItem(LS_KEY, JSON.stringify(s)); }
+// Live state from API — replaces localStorage
+let STATE = {};
+
+async function fetchState(){
+  try {
+    const r = await fetch('/nga-pipeline/api/state');
+    STATE = await r.json();
+  } catch(e) { STATE = {}; }
+}
+
+async function patchCompany(id, update){
+  try {
+    await fetch(`/nga-pipeline/api/companies/${id}`, {
+      method:'PATCH',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(update)
+    });
+    if(update.status !== undefined || update.notes !== undefined){
+      if(!STATE[id]) STATE[id] = {};
+      if(update.status !== undefined) STATE[id].status = update.status;
+      if(update.notes !== undefined) STATE[id].notes = update.notes;
+    }
+  } catch(e) { console.error('patch failed', e); }
+}
 
 // ev.level: 'confirmed' | 'contact' | 'no'
 // ev.what: short label shown on card
@@ -725,8 +746,8 @@ function toggleIneligible(){
   render();
 }
 
-function getStatus(id){ return (loadState()[id]||{}).status || 'not-contacted'; }
-function getNotes(id){ return (loadState()[id]||{}).notes || ''; }
+function getStatus(id){ return (STATE[id]||{}).status || 'not-contacted'; }
+function getNotes(id){ return (STATE[id]||{}).notes || ''; }
 
 function setFilter(f){
   currentFilter = f;
@@ -860,20 +881,15 @@ function closeLightbox(){ document.getElementById('lightbox').classList.remove('
 
 function saveStatus(){
   if(!currentModal) return;
-  const s = loadState();
-  if(!s[currentModal]) s[currentModal]={};
-  s[currentModal].status = document.getElementById('m-status').value;
-  saveState(s);
-  render();
+  const status = document.getElementById('m-status').value;
+  patchCompany(currentModal, {status}).then(()=>render());
 }
 
-function saveNotes(){
+async function saveNotes(){
   if(!currentModal) return;
-  const s = loadState();
-  if(!s[currentModal]) s[currentModal]={};
-  s[currentModal].status = document.getElementById('m-status').value;
-  s[currentModal].notes = document.getElementById('m-notes').value;
-  saveState(s);
+  const status = document.getElementById('m-status').value;
+  const notes = document.getElementById('m-notes').value;
+  await patchCompany(currentModal, {status, notes});
   closeModal();
   render();
 }
@@ -884,7 +900,8 @@ document.addEventListener('keydown', e=>{
 
 document.getElementById('ts-badge').textContent = new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
 
-render();
+// Boot: load live state from API then render
+fetchState().then(()=>render());
 </script>
 </body>
 </html>

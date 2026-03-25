@@ -10,9 +10,10 @@ Tables:
 import sqlite3
 from pathlib import Path
 from datetime import datetime
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
+from starlette.middleware.base import BaseHTTPMiddleware
 from pydantic import BaseModel
 from typing import Optional
 
@@ -21,6 +22,18 @@ DB_PATH = BASE_DIR / "pipeline.db"
 RESUME_DIR = Path("/workspace/group/candidates/mynga/resumes/output")
 
 app = FastAPI(docs_url=None, redoc_url=None)
+
+# Strip hub app-prefix so routes work whether called directly or via proxy
+class StripPrefixMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        path = request.scope["path"]
+        for prefix in ("/nga-pipeline",):
+            if path.startswith(prefix + "/") or path == prefix:
+                request.scope["path"] = path[len(prefix):] or "/"
+                request.scope["raw_path"] = request.scope["path"].encode()
+        return await call_next(request)
+
+app.add_middleware(StripPrefixMiddleware)
 
 # ── DB ────────────────────────────────────────────────────────────────────────
 
